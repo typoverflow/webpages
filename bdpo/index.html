@@ -18,7 +18,8 @@
   <title>Behavior-Regularized Diffusion Policy Optimization for Offline Reinforcement Learning</title>
 
   <script type="text/javascript" id="MathJax-script" async
-    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-svg.js"></script>
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+  </script>
   <script>
     function selectContent(query) {
       var range = document.createRange()
@@ -125,8 +126,8 @@
             <div style="width: 45%; margin: 0; text-align: center;">
               <img src="static/figures/svg/path.svg" width="100%" />
             </div>
-            <p class="caption" style="width: 40%; margin: 0;">
-              Illustration of the behavior-regularized RL framework with different policy parameterizations. Unimodal policies, such as deterministic policies (left), compute the behavior as the center of mass and therefore lead to misleading regularizations; while our method (right) harnesses the flexibility of diffusion models, and the regularization is calculated as the accumulated discrepancies in diffusion directions of the actor and the behavior diffusion. 
+            <p class="caption" style="width: 45%; margin: 0;">
+              Unimodal policies, such as deterministic policies, compute the behavior as the center of mass and therefore lead to misleading regularization; while we harnesses the flexibility of diffusion models, and the regularization is calculated as the accumulated discrepancies in diffusion directions of the actor and the behavior diffusion. This motivates BDPO, our efficient algorithm for optimizing diffusion policies. 
             </p>
           </div>
         </div>
@@ -149,85 +150,94 @@
     </section>
 
     <section>
-      <h2>The Building Blocks of BDPO</h2>
+      <h2>Difficulties of Combining Diffusion Policies and Offline RL</h2>
+          <p>
+          The popularized behavior-regularized RL framework designs to optimize policies $\pi$ while also constraining them towards a behavior policy $\nu$: 
+          $$\max_\pi\ \mathbb{E}_{a\sim\pi(\cdot|s)}\left[Q(s, a)\right]-\eta D_\mathrm{KL}(\pi\|\nu).$$
+          By specifying $\nu$ as ...
+          <ul style="list-style-type: disc; margin-left: 20px;">
+            <li>
+              <b>the uniform policy $U[\mathcal{A}]$:</b> it encourages diversity and exploration of the policy, recovering Maximum Entropy RL; 
+            </li>
+            <li>
+              <b>the dataset collection policy $\pi_{\mathcal{D}}$:</b> it restricts the policy to center around the dataset $\mathcal{D}$, balancing optimization and safety;
+            </li>
+            <li>
+              <b>the pre-trained or sft policy $\pi_{\mathrm{ref}}:</b> it prevent the mode collapse during post-training. 
+            </li>
+          </ul>
+          However, combining diffusion policies with the behavior-regularized RL framework is non-trivial.  
+          </p>
+          <div class="columns bypad centered" style="width: 100%; margin: 0; display: flex;">
+            <div style="color: #6e0909; width: 48%; margin-right: 2%;">
+              <p class="caption">
+                <b>❌ Problem 1: Regularization Calculation</b><br />
+                Traditional regularization, such as KL divergence, requires action densities, which is not directly available for diffusion policies. 
+              </p>
+            </div>
+            <div style="color: #6e0909; width: 48%; margin-left: 2%; margin-top: -0px;">
+              <p class="caption">
+                <b>❌ Problem 2: Diffusion Policy Optimization</b><br />
+                Traditional training objectives of diffusion models require samples from the target distribution, while in offline RL, we only have access to samples from the behavior policy $\nu$.
+              </p>
+            </div>
+          </div>
+    </section>
+
+    <section>
+      <h2>The Ingredients of BDPO</h2>
       <div class="building-blocks-grid">
-        <div class="block">
-          <h3>1. Self-supervised learning</h3>
-          <p>
-            Our first step is to rethink the conventional wisdom above: "reinforcement learning" and
-            "self-supervised learning" are not diametric learning rules, but rather can be married together
-            into self-supervised RL
-            systems that explore and learn policies without reference to a reward function or
-            demonstrations. In this work,
-            we use one of the simplest self-supervised RL algorithms, contrastive RL (CRL).
-          </p>
-        </div>
 
-        <div class="block">
-          <h3>2. Data Scale</h3>
-          <p>
-            A key factor in scaling has been the vast amount of internet data available for
-            learning&mdash;meanwhile, data sparsity has often been a challenge in RL. In recent years,
-            however, there's been a proliferation of
-            GPU-accelerated RL environments, enabling the collection of hundreds of millions of environment
-            steps of
-            online RL data within a few hours. In this work, we leverage the JaxGCRL environment of robotic
-            locomotion,
-            navigation, and manipulation tasks.
-          </p>
-        </div>
-
-        <div class="block">
-          <h3>3. Signal Density</h3>
-          <p>
-            The success of scaling relies not only on data quantity, but also the density of training
-            signals: in
-            next-word prediction, every token in a text becomes a labeled example. By contrast, RL often
-            relies on sparse,
-            delayed rewards, with goal-conditioned RL providing only a single bit of reward feedback per
-            trajectory.
-            However, one underlying mechanism of the CRL algorithm is Hindsight Experience Replay (HER). HER
-            "relabels" each trajectory with the goal the agent actually achieved, so all trajectory data,
-            even unsuccessful attempts
-            that did not reach the goal reward, effectively become labeled samples for learning,
-            significantly improving
-            signal density in a self-supervised manner.
-          </p>
-        </div>
-
-        <div class="block">
-          <h3>4. Classification vs. Regression</h3>
-          <p>
-            Scaling in language and vision are based on a classification paradigm, where increased network
-            capacity
-            yields predictably improved cross-entropy loss. One related work is Farebrother et al. (2024),
-            who showed that discretizing
-            the TD objective of value-based RL into a categorical cross-entropy loss leads to improved
-            scaling properties.
-            In this vein, note that the CRL algorithm in our approach effectively uses a cross entropy loss
-            as well.
-            Its InfoNCE objective is a generalization of the cross-entropy loss, thereby performing RL tasks
-            by
-            classifying whether current states and actions belong to the same or different trajectory that
-            leads toward a goal
-            state.
-          </p>
+        <div class="block full-width" style="margin-top: 0;">
+          <div style="display: flex; align-items: center; gap: 20px;">
+            <div style="flex: 1; margin: 0;">
+              <h3 style="margin-top: 0;">1. Pathwise KL Regularization</h3>
+              <p style="margin: 0;">
+                Instead of the considering the KL divergence between action distributions, we consider the KL divergence defined on diffusion paths, which can be further decomposed into the accumulated discrepancies in reverse diffusion directions:
+                $$
+                \begin{aligned}
+                &D_{\rm KL}(p^{\pi, s}_{0:N} \| p^{\nu, s}_{0:N})\\
+                &=\mathbb{E}\left[\log \frac{p_N^{\pi,s}(a^N)\prod_{n=1}^Np_{n-1|n}^{\pi,s}(a^{n-1}|a^n)}{p_N^{\nu,s}(a^N)\prod_{n=1}^Np_{n-1|n}^{\nu,s}(a^{n-1}|a^n)}\right]\\
+                &=\mathbb{E}\left[\sum_{n=1}^{N}D_{\rm KL}(p^{\pi, s,a^n}_{n-1|n}\|p^{\nu, s,a^n}_{n-1|n})\right]\\
+                &=\mathbb{E}\left[\sum_{n=1}^{N}\frac{\|\mu^{\pi,s}_n(a^n)-\mu^{\nu,s}_n(a^n)\|^2}{2\sigma_n^2}\right].
+                \end{aligned}
+                $$
+                We therefore consider using the pathwise KL regularized objective:
+                $$
+                \max_{p^\pi}\ \mathbb{E}_{a^0\sim p^{\pi,s}}\left[Q(s, a^0)\right]-\eta D_{\rm KL}(p^{\pi, s}_{0:N} \| p^{\nu, s}_{0:N}).
+                $$
+              </p>
+              <p style="color: #27579a">
+                ✔ We proved the equivalency between pathwise KL regularization and KL regularization. <br />
+                ✔ The pathwise KL is consistent with the KL between two diffusion SDEs in the limit of infinitesimal step sizes.
+              </p>
+            </div>
+          </div>
         </div>
 
         <div class="block full-width" style="margin-top: 0;">
           <div style="display: flex; align-items: center; gap: 20px;">
             <div style="flex: 1; margin: 0;">
-              <h3 style="margin-top: 0;">5. Network Architecture</h3>
+              <h3 style="margin-top: 0;">2. Two-time-scale Actor-Critic</h3>
               <p style="margin: 0;">
-                Finally, training large RL networks often yields training instabilities. Thus, scaling will
-                require
-                incorporating architectural techniques from prior work, including residual connections, layer
-                normalization, and Swish activation. These components enable increasing model capacity while
-                preserving training stability.
+                Instead of the considering the KL divergence between action distributions, we consider the KL divergence defined on diffusion paths, which can be further decomposed into the accumulated discrepancies in reverse diffusion directions:
+                $$
+                \begin{aligned}
+                &D_{\rm KL}(p^{\pi, s}_{0:N} \| p^{\nu, s}_{0:N})\\
+                &=\mathbb{E}\left[\log \frac{p_N^{\pi,s}(a^N)\prod_{n=1}^Np_{n-1|n}^{\pi,s}(a^{n-1}|a^n)}{p_N^{\nu,s}(a^N)\prod_{n=1}^Np_{n-1|n}^{\nu,s}(a^{n-1}|a^n)}\right]\\
+                &=\mathbb{E}\left[\sum_{n=1}^{N}D_{\rm KL}(p^{\pi, s,a^n}_{n-1|n}\|p^{\nu, s,a^n}_{n-1|n})\right]\\
+                &=\mathbb{E}\left[\sum_{n=1}^{N}\frac{\|\mu^{\pi,s}_n(a^n)-\mu^{\nu,s}_n(a^n)\|^2}{2\sigma_n^2}\right].
+                \end{aligned}
+                $$
+                We therefore consider using the pathwise KL regularized objective:
+                $$
+                \max_{p^\pi}\ \mathbb{E}_{a^0\sim p^{\pi,s}}\left[Q(s, a^0)\right]-\eta D_{\rm KL}(p^{\pi, s}_{0:N} \| p^{\nu, s}_{0:N}).
+                $$
               </p>
-            </div>
-            <div style="flex: 1; text-align: center;">
-              <img src="static/figures/architecture_flat.png" style="width: 93%; border-radius: 10px; margin: 0px;" />
+              <p style="color: #27579a">
+                ✔ We proved the equivalency between pathwise KL regularization and KL regularization. <br />
+                ✔ The pathwise KL is consistent with the KL between two diffusion SDEs in the limit of infinitesimal step sizes.
+              </p>
             </div>
           </div>
         </div>
@@ -318,171 +328,6 @@
           });
         });
       </script>
-    </section>
-
-    <section>
-      <h2>Empirical Results</h2>
-
-      <div class="yspace centered">
-        <div class="full-width margin"
-          style="width: 100%; margin: 0; display: flex; align-items: center; justify-content: center;">
-          <div style="width: 90%; margin: 0; text-align: center;">
-            <img src="static/figures/main_results.png" width="100%" />
-          </div>
-        </div>
-        <p class="caption" style="width: 90%; margin: 20px auto; margin-top: 0px;">
-          <b>Scaling network depth yields performance gains</b>
-          across a suite of locomotion, navigation, and manipulation tasks, ranging from doubling performance
-          to 50×
-          improvements on Humanoid-based tasks. Notably,
-          rather than scaling smoothly, performance often jumps at specific "critical" depths (e.g., 8 layers
-          on Ant
-          Big Maze, 64 on Humanoid U-Maze), which correspond to the emergence of qualitatively distinct
-          learned
-          <!-- policies (see <a href="#qualitative-evaluation">Qualitative Evaluation of Scaling Depth</a>). -->
-          policies (see the <a href="#qualitative-evaluation">section below</a>).
-        </p>
-      </div>
-
-      <hr style="width: 50%; margin: 40px auto; border: none; border-top: 1px solid #ddd;" />
-
-      <!-- <h3 id="qualitative-evaluation" style="text-align: center; color: #27579a;">Scaling Depth Unlocks
-        New/Qualitatively Different/Emergent
-        Capabilities</h3> -->
-      <h3 id="qualitative-evaluation">Qualitatively-Different Learned Behaviors Emerge With Depth</h3>
-      <div class="yspace centered">
-        <!-- Single row for emergent capabilities -->
-        <div class="full-width margin" style="width: 100%; margin: 0; display: flex; align-items: center;">
-          <div style="width: 61%; margin: 0;">
-            <img src="static/figures/emergent_capabilities.png" width="100%" />
-          </div>
-          <p class="caption" style="width: 35%; margin-left: 4%;">
-            <b>Increasing depth results in new capabilities:</b><br />
-            <b><i>Row 1</i></b>: A humanoid agent trained with network depth 4 collapses and throws itself
-            towards the
-            goal, as opposed to in <b><br /><i>Row 2</i></b>, where the depth 16 agent gains the ability to walk
-            upright.
-            <br /><b><i>Row 3</i></b>: At depth 64, the humanoid agent in U-Maze struggles to reach the goal
-            and
-            falls.
-            <br /><b><i>Row 4</i></b>: An impressively novel policy emerges at depth 256, as the agent
-            exhibits an
-            acrobatic strategy of compressing its body to vault over the maze wall.
-          </p>
-        </div>
-
-        <!-- Two column layout for remaining pairs -->
-        <div class="columns bypad centered" style="width: 100%; margin: 0; display: flex;">
-          <div style="width: 48%; margin-right: 2%;">
-            <div style="width: 70%; margin: 0 auto;">
-              <img src="static/figures/stitching.png" width="100%" />
-            </div>
-            <p class="caption" style="margin-top: 10px;">
-              <b>Deep networks exhibit improved generalization.</b><br />
-              <i>(Top left)</i> We modify the training setup of the Ant U-Maze environment such that
-              start-goal pairs
-              are separated by ≤3 units. This design guarantees
-              that no evaluation pairs <i>(top right)</i> were encountered during training, testing the
-              ability for
-              combinatorial generalization via "stitching."
-              <br />
-              <i>(Bottom)</i> Generalization ability improves as network depth grows from 4 to 16 to 64
-              layers.
-            </p>
-          </div>
-          <div style="width: 48%; margin-left: 2%;">
-            <div style="width: 84%; margin: 0 auto;">
-              <img src="static/figures/Q_vis.png" width="100%" />
-            </div>
-            <p class="caption" style="margin-top: 10px;">
-              <b>Deep networks learn better representations.</b><br />
-              In the U4-Maze, the start and goal positions are indicated by the ⊙ and <b>G</b> symbols
-              respectively, and
-              the visualized Q values are computed via the L₂
-              distance in the learned representation space, i.e., Q(s,a,g) = ‖φ(s,a) - ψ(g)‖₂. The shallow
-              depth-4
-              network <i>(left)</i> appears to naively rely on Euclidean proximity, exhibited by the high
-              Q values of
-              the semicircular gradient near the start position, despite the maze wall.
-              <br />
-              In the depth-64 heatmap <i>(right)</i>, the highest Q values cluster at the goal, gradually
-              tapering along
-              the maze's interior
-              boundary. These results highlight how increasing depth is important for learning value
-              functions in
-              goal-conditioned settings, which are characterized by long horizons and sparse rewards.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <hr style="width: 50%; margin: 40px auto; border: none; border-top: 1px solid #ddd;" />
-
-      <!-- <h3 style="text-align: center; color: #27579a;">Scaling Width and Batch Size -->
-      <!-- </h3> -->
-      <h3 style="text-align: center; color: #27579a; margin-bottom: 0px">Scaling Depth Unlocks Batch Size Scaling and
-        Outperforms
-        Width
-        Scaling
-      </h3>
-      <!-- Two column layout for width and batch size -->
-      <div class="columns bypad centered" style="width: 100%; margin: 0; display: flex;">
-        <div style="width: 48%; margin-right: 2%;">
-          <div style="width: 100%; margin: 0 auto;">
-            <img src="static/figures/network_widths.png" width="100%" />
-          </div>
-          <p class="caption">
-            <b>Scaling network width vs. depth.</b><br />
-            We reflect findings from previous works which suggest that increasing network width can enhance
-            performance. However, in contrast to prior work, our method is able to scale depth, yielding
-            more impactful
-            performance gains while also being more parameter-efficient (similar performance for $50\times$
-            smaller
-            models). For instance, in the Humanoid environment, raising the width to 4096 (depth=4) fails to
-            match the performance achieved by simply doubling the depth to 8 (width=256). This comparative
-            advantage of
-            scaling depth seems more pronounced as the observation dimensionality increases.
-          </p>
-        </div>
-        <div style="width: 48%; margin-left: 2%; margin-top: -22px;">
-          <div style="width: 100%; margin: 0 auto;">
-            <img src="static/figures/batch_sizes.png" width="100%" />
-          </div>
-          <p class="caption">
-            <b>Deeper networks unlock batch size scaling.</b><br />
-            Scaling batch size has been an effective mechanism in many areas in ML, but it has not
-            demonstrated the same
-            effectiveness in reinforcement learning. Our findings indicate that, while scaling batch size
-            provides only
-            marginal benefits at the original network capacity, larger networks can effectively leverage
-            batch size
-            scaling to achieve further improvements.
-          </p>
-        </div>
-      </div>
-
-      <hr style="width: 50%; margin: 40px auto; border: none; border-top: 1px solid #ddd;" />
-
-      <h3 style="text-align: center; color: #27579a; margin-bottom: 0px">How Far Can We Scale Depth?</h3>
-      <div class="yspace centered">
-        <div class="full-width margin" 
-             style="width: 100%; margin: 0; display: flex; align-items: center; justify-content: center; gap: 20px;">
-          <div style="width: 45%; margin: 0; text-align: center;">
-            <img src="static/figures/depth_scaling_limits_2.png" width="100%" />
-          </div>
-          <p class="caption" style="width: 40%; margin: 0;">
-            <b>Exploring the limits of scaling.</b><br />
-            We push the boundaries of network depth scaling up to 1024 layers. In Humanoid Big Maze, 
-            performance plateaus. However, on Humanoid U-Maze, we observe continued performance 
-            improvements with network depths of 256 and 1024 layers. This may be because the maneuver 
-            being learned (flipping over the wall) is exceptionally complex (see 
-            <a href="#qualitative-evaluation">Figure above</a>), and requires greater network depth 
-            to learn. Note that for the 1024-layer training runs, we observed the actor loss exploding at the 
-            onset of training, so we maintained the actor depth at 512 while using 1024-layer networks 
-            only for the two critic encoders.
-          </p>
-        </div>
-      </div>
     </section>
 
     <section>
