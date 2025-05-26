@@ -163,19 +163,19 @@
               <b>the dataset collection policy $\pi_{\mathcal{D}}$:</b> it restricts the policy to center around the dataset $\mathcal{D}$, balancing optimization and safety;
             </li>
             <li>
-              <b>the pre-trained or sft policy $\pi_{\mathrm{ref}}:</b> it prevent the mode collapse during post-training. 
+              <b>the pre-trained or sft policy $\pi_{\mathrm{ref}}$:</b> it prevent the mode collapse during post-training. 
             </li>
           </ul>
           However, combining diffusion policies with the behavior-regularized RL framework is non-trivial.  
           </p>
           <div class="columns bypad centered" style="width: 100%; margin: 0; display: flex;">
-            <div style="color: #6e0909; width: 48%; margin-right: 2%;">
+            <div style="color: #c61010; width: 48%; margin-right: 2%;">
               <p class="caption">
                 <b>❌ Problem 1: Regularization Calculation</b><br />
                 Traditional regularization, such as KL divergence, requires action densities, which is not directly available for diffusion policies. 
               </p>
             </div>
-            <div style="color: #6e0909; width: 48%; margin-left: 2%; margin-top: -0px;">
+            <div style="color: #c61010; width: 48%; margin-left: 2%; margin-top: -0px;">
               <p class="caption">
                 <b>❌ Problem 2: Diffusion Policy Optimization</b><br />
                 Traditional training objectives of diffusion models require samples from the target distribution, while in offline RL, we only have access to samples from the behavior policy $\nu$.
@@ -220,23 +220,30 @@
             <div style="flex: 1; margin: 0;">
               <h3 style="margin-top: 0;">2. Two-time-scale Actor-Critic</h3>
               <p style="margin: 0;">
-                Instead of the considering the KL divergence between action distributions, we consider the KL divergence defined on diffusion paths, which can be further decomposed into the accumulated discrepancies in reverse diffusion directions:
+                Now we are dealing with a two-time-scale RL algorithm. The upper level works in the environment time steps, which specifies the reward minus the penalty as single step reward; 
+                the lower level works completely inside the diffusion time steps, which treats single step KL as the reward. 
+                <br />
+                Similar to how temporal difference (TD) learning amortizes the cost for trajectory optimization, we employ two-time-scale TD learning:
+              </p>
+              <p>
+                1. (Upper Level): The action value functions $Q^\pi(s, a)$ are estimated by standard TD learning: <br />
+                $$Q^\pi(s, a)\leftarrow R(s, a) + \gamma \mathbb{E}_{a'^{0:N}\sim p^{\pi,s}_{0:N}}\left[Q^\pi(s', a'^0)-\sum_{n=1}^ND_{\rm KL}(p^{\pi,s,a'^n}_{n-1|n}\|p^{\nu,s,a'^n}_{n-1|n})\right]$$
+                2. (Lower Level): The diffusion value functions $V^{\pi, s}_n$ are estimated by TD learning between single step reverse diffusion:
                 $$
                 \begin{aligned}
-                &D_{\rm KL}(p^{\pi, s}_{0:N} \| p^{\nu, s}_{0:N})\\
-                &=\mathbb{E}\left[\log \frac{p_N^{\pi,s}(a^N)\prod_{n=1}^Np_{n-1|n}^{\pi,s}(a^{n-1}|a^n)}{p_N^{\nu,s}(a^N)\prod_{n=1}^Np_{n-1|n}^{\nu,s}(a^{n-1}|a^n)}\right]\\
-                &=\mathbb{E}\left[\sum_{n=1}^{N}D_{\rm KL}(p^{\pi, s,a^n}_{n-1|n}\|p^{\nu, s,a^n}_{n-1|n})\right]\\
-                &=\mathbb{E}\left[\sum_{n=1}^{N}\frac{\|\mu^{\pi,s}_n(a^n)-\mu^{\nu,s}_n(a^n)\|^2}{2\sigma_n^2}\right].
+                &V_0^{\pi,s}(a^0)\leftarrow Q^\pi(s,a^0),\\
+                &V_n^{\pi,s}(a^n)\leftarrow-\eta D_{\rm KL}(p^{\pi,s,a^n}_{n-1|n}\|p^{\nu,s,a^n}_{n-1|n})+\mathbb{E}_{a^{n-1}\sim p^{\pi,s,a^n}_{n-1|n}}\left[V_{n-1}^{\pi,s}(a^{n-1})\right].
+            \end{aligned}
+                $$
+                3. (Policy Improvement): The diffusion policy now only requires single step diffusion to improve!
+                $$
+                \begin{aligned}
+                &\max_{p^{\pi,s,a^n}_{n-1|n}}\ \ -\eta\ell^{\pi,s}_n(a^n) + \underset{p^{\pi,s,a^n}_{n-1|n}}{\mathbb{E}}\left[V^{\pi,s}_{n-1}(a^{n-1})\right].
                 \end{aligned}
-                $$
-                We therefore consider using the pathwise KL regularized objective:
-                $$
-                \max_{p^\pi}\ \mathbb{E}_{a^0\sim p^{\pi,s}}\left[Q(s, a^0)\right]-\eta D_{\rm KL}(p^{\pi, s}_{0:N} \| p^{\nu, s}_{0:N}).
                 $$
               </p>
               <p style="color: #27579a">
-                ✔ We proved the equivalency between pathwise KL regularization and KL regularization. <br />
-                ✔ The pathwise KL is consistent with the KL between two diffusion SDEs in the limit of infinitesimal step sizes.
+                ✔ We proved the convergence of the two-time-scale actor-critic algorithm. <br />
               </p>
             </div>
           </div>
@@ -331,65 +338,90 @@
     </section>
 
     <section>
-      <h2>Summary of Key Empirical Findings</h2>
-      <div class="findings-container">
-        <ul class="key-findings">
-          <li>
-            CRL is scalable to depths unattainable by other RL proprioceptive algorithms (1000+ layers),
-            perhaps due
-            to
-            its self-supervised nature.
-          </li>
-          <li>
-            Both width and depth are key factors influencing CRL's performance, but depth achieves greater
-            performance
-            and better parameter-efficiency (similar performance for 50× smaller models).
-          </li>
-          <li>
-            We observe signs of emergent behaviors in CRL with deep neural networks, such as humanoid
-            learning to walk
-            and navigate a maze.
-          </li>
-          <li>
-            Scale unlocks learning difficult maze topologies.
-          </li>
-          <li>
-            Batch size scaling occurs in CRL for deep networks.
-          </li>
-          <li>
-            CRL benefits from both the actor and critic scale.
-          </li>
-        </ul>
+      <h2>Key Empirical Findings</h2>
+
+      <h3 style="text-align: center; color: #27579a; margin-bottom: 0px" id="toy2d">Synthetic 2D Tasks
+      </h3>
+      <div class="yspace centered">
+        <div class="full-width margin"
+          style="width: 100%; margin: 0; display: flex; align-items: center; justify-content: center;">
+          <div style="width: 90%; margin: 0; text-align: center;">
+            <img src="static/figures/svg/5.1_actor.svg" width="100%" />
+          </div>
+        </div>
+        <p class="caption" style="width: 90%; margin-left: 4%;">
+          1, <b>Dots and lines depict the diffusion generation path from the policy</b>: BDPO accurately fits the target distribution (the rightmost column). <br />
+          2, <b>Background color depicts the landscape of diffusion value function over the entire space</b>: In the initial steps ($n=50$ to $n=40$), the sample movement is subtle, while in the later steps ($n=30$ to $n=0$), the samples rapidly converge to the nearest modes of the data.
+        </p>
       </div>
 
-      <style>
-        .findings-container {
-          background-color: #f5f5f5;
-          border: 1px solid #ddd;
-          border-radius: 8px;
-          padding: 25px 30px;  /* Increased padding */
-          margin: 20px 0;
-          width: 100%;        /* Changed from 70% to 100% */
-          box-sizing: border-box;
-        }
+      <hr style="width: 50%; margin: 40px auto; border: none; border-top: 1px solid #ddd;" />
 
-        .key-findings {
-          margin: 0;
-          padding-left: 25px;  /* Slightly increased padding */
-          columns: 2;         /* Split into 2 columns */
-          column-gap: 40px;   /* Space between columns */
-        }
+      <h3 style="text-align: center; color: #27579a; margin-bottom: 0px" id="d4rl">D4RL Benchmark Results
+      </h3>
+      <div class="yspace centered">
+        <div class="full-width margin"
+          style="width: 100%; margin: 0; display: flex; align-items: center; justify-content: center;">
+          <div style="width: 90%; margin: 0; text-align: center;">
+            <img src="static/figures/d4rl.png" width="100%" />
+          </div>
+        </div>
+        <p class="caption" style="width: 90%; margin-left: 4%;">
+          Diffusion-based methods, particularly those with diffusion-based actor and regularization (including BDPO, DAC, and Diffusion-QL), substantially outperform their non-diffusion counterparts, especially in locomotion tasks. 
+          Meanwhile, BDPO consistently achieves superior performance across nearly all datasets, underscoring the effectiveness of combining diffusion policies and the behavior-regularized RL framework.
+        </p>
+      </div>
 
-        .key-findings li {
-          margin-bottom: 15px;  /* Increased spacing between items */
-          break-inside: avoid;  /* Prevent items from splitting across columns */
-        }
+      <hr style="width: 50%; margin: 40px auto; border: none; border-top: 1px solid #ddd;" />
 
-        .key-findings li:last-child {
-          margin-bottom: 0;
-        }
-      </style>
+      <h3 style="text-align: center; color: #27579a; margin-bottom: 0px" id="runtime">Runtime Analysis
+      </h3>
+      <div class="yspace centered">
+        <div class="full-width margin"
+          style="width: 100%; margin: 0; display: flex; align-items: center; justify-content: center; gap: 20px;">
+          <div style="width: 45%; margin: 0; text-align: center;">
+            <img src="static/figures/svg/appfig_runtime.svg" width="100%" />
+          </div>
+          <p class="caption" style="width: 45%; margin: 0;">
+            <b>BDPO runs efficiently.</b><br />
+            BDPO consists of three key steps: pretraining behavior diffusion, training value functions ($Q^\pi$ and $V^{\pi,s}_n$), and optimizing the actor. 
+            The pertaining phase takes around 8 minutes and is therefore negligible. 
+            The $Q^\pi$ training follows the same approach as Diffusion-QL and DAC, while $V^{\pi,s}_n$ introduces acceptable overhead since it only requires single-step diffusion. 
+            For actor training, both DAC and BDPO use single-step diffusion, while Diffusion-QL needs to back-propagate through the entire diffusion path, leading to a significantly higher runtime.
+          </p>
+        </div>
+      </div>
     </section>
+
+    <section>
+      <h2>Closing Remarks</h2>
+      <div class="block full-width" style="margin-top: 0;">
+        <div style="display: flex; align-items: center; gap: 20px;">
+          <div style="flex: 1; margin: 0;">
+            <p style="margin: 0;">
+              <ul class="key-findings">
+                <li>
+                  Framing the reverse process of diffusion models as an MDP, we propose to implement the KL divergence w.r.t. the diffusion generation path, rather than the clean action samples;
+                </li>
+                <li>
+                  Building upon this foundation, we propose a two-time-scale actor-critic method to optimize diffusion policies.  Instead of differentiating the policy along the entire diffusion path, BDPO estimates the values at intermediate diffusion steps to amortize the optimization, offering efficient computation, convergence guarantee and state-of-the-art performance;
+                </li>
+                <li>
+                  Experiments conducted on synthetic 2D datasets reveal that our method effectively approximates the target distribution. Furthermore, when applied to continuous control tasks provided by D4RL, BDPO demonstrates superior performance compared to baseline offline RL algorithms.
+                </li>
+              </ul>
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- <section>
+      <h2>One More Thing: Flow RL</h2>
+          <p>
+            Running diffusion policies with PyTorch is really, really slow...
+          </p>
+    </section> -->
 
     <section>
       <h2>
