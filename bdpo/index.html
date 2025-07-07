@@ -238,7 +238,7 @@
                 3. (Policy Improvement): The diffusion policy now only requires single step diffusion to improve!
                 $$
                 \begin{aligned}
-                &\max_{p^{\pi,s,a^n}_{n-1|n}}\ \ -\eta\ell^{\pi,s}_n(a^n) + \underset{p^{\pi,s,a^n}_{n-1|n}}{\mathbb{E}}\left[V^{\pi,s}_{n-1}(a^{n-1})\right].
+                &\max_{p^{\pi,s,a^n}_{n-1|n}}\ \ -\eta D_{\rm KL}(p^{\pi,s,a^n}_{n-1|n}\|p^{\nu,s,a^n}_{n-1|n}) + \underset{p^{\pi,s,a^n}_{n-1|n}}{\mathbb{E}}\left[V^{\pi,s}_{n-1}(a^{n-1})\right].
                 \end{aligned}
                 $$
               </p>
