@@ -113,6 +113,11 @@
           <span class="icon"><i class="fas fa-code"></i></span><span>Code</span>
         </a>
       </span>
+      <span class=""link>
+        <a href="https://icml.cc/virtual/2025/poster/44003" class="button">
+          <span class="icon"><i class="fas fa-video"></i></span><span> Recording</span>
+        </a>
+      </span>
     </div>
   </header>
 
@@ -227,7 +232,7 @@
               </p>
               <p>
                 1. (Upper Level): The action value functions $Q^\pi(s, a)$ are estimated by standard TD learning: <br />
-                $$Q^\pi(s, a)\leftarrow R(s, a) + \gamma \mathbb{E}_{a'^{0:N}\sim p^{\pi,s}_{0:N}}\left[Q^\pi(s', a'^0)-\sum_{n=1}^ND_{\rm KL}(p^{\pi,s,a'^n}_{n-1|n}\|p^{\nu,s,a'^n}_{n-1|n})\right]$$
+                $$Q^\pi(s, a)\leftarrow R(s, a) + \gamma \mathbb{E}_{a'^{0:N}\sim p^{\pi,s'}_{0:N}}\left[Q^\pi(s', a'^0)-\sum_{n=1}^ND_{\rm KL}(p^{\pi,s',a'^n}_{n-1|n}\|p^{\nu,s',a'^n}_{n-1|n})\right]$$
                 2. (Lower Level): The diffusion value functions $V^{\pi, s}_n$ are estimated by TD learning between single step reverse diffusion:
                 $$
                 \begin{aligned}
