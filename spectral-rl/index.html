@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <!-- Meta tags for social media banners, these should be filled in appropriatly as they are your "business card" -->
+  <!-- Replace the content tag with appropriate information -->
+  <!-- <meta name="description" content="DESCRIPTION META TAG">
+  <meta property="og:title" content="SOCIAL MEDIA TITLE TAG"/>
+  <meta property="og:description" content="SOCIAL MEDIA DESCRIPTION TAG TAG"/>
+  <meta property="og:url" content="URL OF THE WEBSITE"/>
+  <!-- Path to banner image, should be in the path listed below. Optimal dimenssions are 1200X630-->
+  <!-- <meta property="og:image" content="static/images/carousel2.jpg" />
+  <meta property="og:image:width" content="1200"/>
+  <meta property="og:image:height" content="630"/> --> 
+
+
+  <!-- <meta name="twitter:title" content="TWITTER BANNER TITLE META TAG">
+  <meta name="twitter:description" content="TWITTER BANNER DESCRIPTION META TAG">
+  <!-- Path to banner image, should be in the path listed below. Optimal dimenssions are 1200X600-->
+  <!-- <meta name="twitter:image" content="static/images/your_twitter_banner_image.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- Keywords for your paper to be indexed by-->
+  <!-- <meta name="keywords" content="LLMs, Adaptation">
+  <meta name="viewport" content="width=device-width, initial-scale=1"> --> 
+
+
+  <title>Spectral-RL</title>
+  <link rel="icon" type="image/x-icon" href="static/images/icon-low.png">
+  <link href="https://fonts.googleapis.com/css?family=Google+Sans|Noto+Sans|Castoro"
+  rel="stylesheet">
+
+  <link rel="stylesheet" href="static/css/bulma.min.css">
+  <link rel="stylesheet" href="static/css/bulma-carousel.min.css">
+  <link rel="stylesheet" href="static/css/bulma-slider.min.css">
+  <link rel="stylesheet" href="static/css/fontawesome.all.min.css">
+  <link rel="stylesheet"
+  href="https://cdn.jsdelivr.net/gh/jpswalsh/academicons@1/css/academicons.min.css">
+  <link rel="stylesheet" href="static/css/index.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+  <script src="https://documentcloud.adobe.com/view-sdk/main.js"></script>
+  <script defer src="static/js/fontawesome.all.min.js"></script>
+  <script src="static/js/bulma-carousel.min.js"></script>
+  <script src="static/js/bulma-slider.min.js"></script>
+  <script src="static/js/index.js"></script>
+  <script type="text/javascript" id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js">
+  </script>
+  <script>
+    function selectContent(query) {
+      var range = document.createRange()
+      var selection = window.getSelection()
+      var elem = document.querySelector(query)
+      range.selectNodeContents(elem)
+      selection.removeAllRanges()
+      selection.addRange(range)
+    }
+  </script>
+</head>
+<body>
+  <script type="text/javascript">
+    window.MathJax = {
+      tex: {
+        inlineMath: [
+          ["$", "$"],
+          ["\\(", "\\)"],
+        ],
+        displayMath: [
+          ["$$", "$$"],
+          ["\\[", "\\]"],
+        ],
+        processEscapes: true,
+        macros: {
+          planclass: "\\operatorname{\\mathbf{plan}}",
+          S: "\\mathcal{S}",
+          gS: "\\mathcal{S}",
+          cS: "\\mathcal{S}",
+          cB: "\\mathcal{B}",
+          cA: "\\mathcal{A}",
+          A: "\\mathcal{A}",
+          gA: "\\mathcal{A}",
+          D: "\\mathcal{D}",
+          R: "\\mathbb{R}",
+          E: "\\mathbb{E}",
+          P: "\\mathrm{P}",
+          var: "\\mathrm{Var}",
+          cov: "\\mathrm{Cov}",
+          argmin: "\\mathop{\\arg\\min}",
+          argmax: "\\mathop{\\arg\\max}",
+        },
+      },
+      svg: {
+        fontCache: "global",
+      },
+    }
+  </script>
+
+  <section class="hero">
+    <div class="hero-body">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered">
+          <div class="column has-text-centered">
+            <figure style="text-align: center; margin-bottom: 1rem;">
+              <img src="static/images/icon-wide-low.png" alt="Logo" style="width: 300px; height: auto;">
+            </figure>
+          <h1 class="title is-1 publication-title" style="font-size: 2.2em; font-weight: normal;"> <strong style="font-weight: bold; font-style: monospace;">Spectral-RL</strong>: <span style="font-weight: normal;">Spectral Representations for Reinforcement Learning</span> </h1>
+            <div class="is-size-5 publication-authors">
+              <!-- Paper authors -->
+              <span class="author-block">
+                <a href="https://about.gaocx.io/" target="_blank">Chenxiao Gao</a>,</span>
+                <span class="author-block">
+                  <a href="https://night-chen.github.io" target="_blank">Haotian Sun</a>,</span>
+                  <span class="author-block">
+                    <a href="https://nali.seas.harvard.edu/" target="_blank">Na Li</a>,</span>
+                  <span class="author-block">
+                    <a href="https://webdocs.cs.ualberta.ca/~dale/" target="_blank">Dale Schuurmans</a><sup></sup>,</span>
+                  <span class="author-block">
+                    <a href="https://bo-dai.github.io/" target="_blank">Bo Dai</a><sup></sup></span>                  
+                  </div>
+
+              <div class="is-size-5 publication-authors">
+                <span class="author-block">Georgia Institute of Technology</span>&nbsp;&nbsp;&nbsp;
+                <span class="author-block">Harvard University</span>&nbsp;&nbsp;&nbsp;
+                <span class="author-block">University of Alberta</span>&nbsp;&nbsp;&nbsp;
+                <span class="author-block">DeepMind</span>
+              </div>
+
+                  <div class="column has-text-centered">
+                    <div class="publication-links">
+                      <!-- Arxiv PDF link -->
+                      <span class="link-block">
+                        <a href="https://arxiv.org/pdf/1234.56789" target="_blank"
+                        class="external-link button is-normal is-rounded is-dark">
+                        <span class="icon">
+                          <i class="fas fa-file-pdf"></i>
+                        </span>
+                        <span>Paper</span>
+                      </a>
+                    </span>
+
+                    <!-- Supplementary PDF link
+                    <span class="link-block">
+                      <a href="static/pdfs/supplementary_material.pdf" target="_blank"
+                      class="external-link button is-normal is-rounded is-dark">
+                      <span class="icon">
+                        <i class="fas fa-file-pdf"></i>
+                      </span>
+                      <span>Supplementary</span>
+                    </a>
+                  </span> -->
+
+                  <!-- Github link -->
+                  <span class="link-block">
+                    <a href="https://github.com/spectral-rl/spectral-rl" target="_blank"
+                    class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fab fa-github"></i>
+                    </span>
+                    <span>Code</span>
+                  </a>
+                </span>
+
+                <!-- ArXiv abstract Link -->
+                <!-- <span class="link-block">
+                  <a href="https://arxiv.org/abs/2505.07782" target="_blank"
+                  class="external-link button is-normal is-rounded is-dark">
+                  <span class="icon">
+                    <i class="ai ai-arxiv"></i>
+                  </span>
+                  <span>arXiv</span>
+                </a>
+              </span> -->
+
+
+
+                <!-- Hugging Face Leaderboard Link -->
+                <!-- <span class="link-block">
+                  <a href="https://huggingface.co/spaces/MLE-Dojo/Leaderboard" target="_blank"
+                  class="external-link button is-normal is-rounded is-dark">
+                    <span class="icon">
+                      <i class="fas fa-chart-bar"></i>
+                    </span>
+                    <span>Leaderboard</span>
+                  </a>
+                </span> -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- Teaser video-->
+<section class="hero teaser">
+  <div class="container is-max-desktop">
+    <div class="hero-body">
+      <div style="display: flex; justify-content: center;">
+        <img src="static/images/banner.png" width="80%" height="auto" alt="MY ALT TEXT"/>
+      </div>
+      <h2 class="subtitle has-text-centered" style="width: 80%; margin: 0 auto;">
+        <br>
+        We present the framework of <strong style="font-weight: bold; font-style: monospace;">spectral representations</strong>, which provide an effective abstraction of the system dynamics for policy optimization while also possess clear theoretical characterizations.</h2>
+    </div>
+  </div>
+</section>
+<!-- End teaser video -->
+
+<!-- Paper abstract -->
+<section class="section hero is-light">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered has-text-centered">
+      <div class="column is-four-fifths">
+        <h2 class="title is-3">Abstract</h2>
+        <div class="content has-text-justified">
+          <p>
+            Reinforcement learning in large state and action spaces typically employ function approximators to represent core components like the policy, value functions, and dynamics models. 
+            Although powerful approximators such as neural networks offer great expressiveness, they also exhibit optimization instability and exploration difficulty, present theoretical ambiguities, and incur substantial computational costs in practice. 
+            In this survey, we introduce the perspective of spectral representations as a solution to address these difficulties in RL. 
+            Stemming from the spectral decomposition of the transition operator, this framework yields an effective abstraction of the system dynamics for subsequent policy optimization while also providing a clear theoretical characterization. 
+            We reveal how to construct spectral representations for transition operators that possess latent variable structures or energy-based structures, which implies different learning methods to extract spectral representations from data. 
+            Notably, each of these learning methods realizes an effective RL algorithm under this framework. We also extend this spectral view to partially observable MDPs. 
+            Finally, we validate these algorithms on over 20 challenging tasks from the DeepMind Control Suite, where they achieve performances comparable or superior to state-of-the-art model-free and model-based baselines.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- End paper abstract -->
+
+
+<section class="section" id="introduction">
+  <div class="container is-max-desktop content">
+    <h2 class="title">🧗 Introduction</h2>
+    <p>
+      Modern RL algorithms typically resort to <strong>function approximation</strong> (e.g., deep neural networks) when faced with large state and action spaces. However, these approximations come with significant trade-offs: they often incur optimization difficulties, limited theoretical guarantees, and substantial computational costs. This raises a natural question:
+    </p>
+    <div style="text-align: center; padding: 10px; margin-top: 20px; margin-bottom: 20px;" class="section hero is-light">
+      <em>Can we develop reinforcement learning algorithms that are both provably efficient and practically effective?</em>
+    </div>
+    <p>
+      In this survey, we provide an affirmative answer to this question by introducing the framework of spectral representations. We systematically examine spectral representations from the following perspectives:
+    </p>
+    <ul>
+      <li><b>Properties and Formulations:</b> We first review the core properties of spectral representations. We then describe methods for constructing them in both linear and non-linear dynamic systems, demonstrating the broad applicability of the framework.</li>
+      <li><b>Learning Algorithms:</b> We review algorithms designed to learn spectral representations directly from data, focusing on model-free approaches that circumvent the need for intermediate dynamics modeling.</li>
+      <li><b>Integration with RL:</b> We examine how spectral representations can be combined with model-free RL algorithms to achieve provably efficient and practically effective performance.</li>
+      <li><b>Empirical Evaluation:</b> We summarize this survey with large-scale evaluations, comparing the performance of spectral representation-based RL algorithms against standard model-free and model-based baselines.</li>
+    </ul>
+  <!-- </div>
+</section>
+
+<section class="section" id="overview">
+  <div class="container is-max-desktop content"> -->
+    <hr style="width: 50%; margin: 30px auto; border: none; border-top: 1px solid #ddd;">
+    <h2 class="title">💡 Overview of Spectral Representations</h2>    
+    <p>
+    Inspired by linear MDPs, we consider a more <strong>generalized</strong> factorization. For any well-behaved transition operator $\mathbb{P}$ and reward function $r$, there exist two feature maps $\boldsymbol{\phi}: \mathcal{S}\times\mathcal{A}\to \mathcal{H}$, $\boldsymbol{\mu}:\mathcal{S}\to\mathcal{H}$ and a vector $\boldsymbol{\theta}_r\in\mathcal{H}$ for some proper Hilbert space $\mathcal{H}$, such that
+
+    $$
+    \begin{aligned}
+        \mathbb{P}(s'|s, a) &=\langle\boldsymbol{\phi}(s, a), \boldsymbol{\mu}(s')\rangle_{\mathcal{H}},\\
+        r(s, a)&=\langle \boldsymbol{\phi}(s, a), \boldsymbol{\theta}_r\rangle_{\mathcal{H}}.\\
+    \end{aligned}
+    $$
+
+    In fact, such decomposition always exists. The factorization instantly implies the linearity of $Q$-value functions:
+    $$
+    \begin{aligned}
+    Q^\pi(s, a) &= r(s, a)+\gamma \int_{\mathcal{S}} \mathbb{P}(s'|s, a)V(s')\mathrm{d}s'\\
+    &=\langle \boldsymbol{\phi}(s, a), \boldsymbol{\theta}_r\rangle_{\mathcal{H}}+\gamma \langle \boldsymbol{\phi}(s, a), \int_{\mathcal{S}} \boldsymbol{\mu}(s')V(s')\mathrm{d}s' \rangle_{\mathcal{H}}\\
+    &=\bigg\langle\boldsymbol{\phi}(s, a),\underbrace{\boldsymbol{\theta}_r+\gamma \int_{\mathcal{S}} \boldsymbol{\mu}(s')V(s')\mathrm{d}s'}_{\boldsymbol{\eta}^\pi}\bigg\rangle_{\mathcal{H}}
+    \end{aligned}
+    $$
+    <em>i.e.</em>, $Q$-value functions lie in the linear function space spanned by the same feature map $\boldsymbol{\phi}(s, a)$. This implies that:
+    <p style="color: #27579a; text-indent: 2em;">
+      <b>✔ Theoretically</b>, we can reduce the complexity by only considering linear $Q$-value functions;
+    </p>
+    <p style="color: #c68306; text-indent: 2em;">
+      <b>✔ Practically</b>, $\boldsymbol{\phi}(s, a)$ can serve as a effective representation for $Q$-value functions;
+    </p>
+    <p style="color: #047e1e; text-indent: 2em;">
+      <b>✔ Intuitively</b>, $\boldsymbol{\phi}(s, a)$ encodes the <b>essential</b> information of the system dynamics.
+    </p>
+    Given its significance, we build a systematic framework for utilizing $\boldsymbol{\phi}(s, a)$ for RL. We term $\boldsymbol{\phi}(s, a)$ as the <b>spectral representations</b>. 
+    <hr style="width: 50%; margin: 30px auto; border: none; border-top: 1px solid #ddd;">
+    <h3 style="text-align: center; color: #27579a; margin-bottom: 0px" id="toy2d">Formulations
+    </h3>
+    <br>
+    We can instantiate the factorization for different actual formulations of the transition operators. 
+    <br>
+    <br>
+
+    <div class="block full-width" style="margin-top: 0;">
+      <div style="display: flex; align-items: center; gap: 20px;">
+        <div style="flex: 1; margin: 0;">
+          <h4 style="margin-top: 0;">1. Linear Formulation</h4>
+          <p style="margin: 0;">
+            In this case, there exists $\boldsymbol{\phi}: \mathcal{S}\times\mathcal{A}\to \mathbb{R}^d$ and $\boldsymbol{\mu}:\mathcal{S}\to\mathbb{R}^d$ such that:
+            $$
+                \begin{aligned}
+                    \mathbb{P}_{\text{Linear}}(s'|s, a) &=\boldsymbol{\varphi}(s, a)^\top\boldsymbol{\nu}(s'), 
+                \end{aligned}
+            $$
+            and the spectral representation is 
+            $$
+                \boldsymbol{\phi}_{\text{Linear}}(s, a) = \boldsymbol{\varphi}(s, a).
+            $$
+          </p>
+          <p>
+            <span style="color: #c68306;">○ Equivalent to linear MDPs</span><br>
+            <span style="color: #b80000;">✗ The linear assumption hurts the expressiveness.</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="block full-width" style="margin-top: 0;">
+      <div style="display: flex; align-items: center; gap: 20px;">
+        <div style="flex: 1; margin: 0;">
+          <h4 style="margin-top: 0;">2. Latent Variable Formulation</h4>
+          <p style="margin: 0;">
+            The latent variable is $z\in\mathcal{Z}$ and there exist two probability measures $\varphi(z|s, a)$ and $\nu(s'|z)$ such that:
+            $$
+            \begin{aligned}
+                \mathbb{P}_{\text{LV}}(s'|s, a) &=\int_{\mathcal{Z}} \varphi(z|s, a)\nu(s'|z)\mathrm{d}z.
+            \end{aligned}
+            $$
+            In this case, the spectral representation is
+            $$
+                \boldsymbol{\phi}_{\text{LV}}(s, a) = [\varphi(z_1|s, a), \varphi(z_2|s, a), \ldots]^\top\quad \text{ for } z_i\in \mathcal{Z}.
+            $$
+          </p>
+          <p>
+            <span style="color: #c68306;">○ Infinite-dimensional but can be approximated by Monte-Carlo sampling;</span><br>
+            <span style="color: #047e1e;">✔ More expressive the the linear case.</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="block full-width" style="margin-top: 0;">
+      <div style="display: flex; align-items: center; gap: 20px;">
+        <div style="flex: 1; margin: 0;">
+          <h4 style="margin-top: 0;">3. Energy-Based Formulation</h4>
+          <p style="margin: 0;">
+            Energy-based models (EBMs) associate the transition probability with an energy function $E(s, a, s')$: 
+            $$
+                \begin{aligned}
+                    \mathbb{P}_{\text{EBM}}(s'|s, a)&=\frac{\exp(E(s, a, s'))}{Z(s, a)}=\frac{\exp(\boldsymbol{\varphi}(s, a)^\top\boldsymbol{\nu}(s'))}{Z(s, a)},
+                \end{aligned}
+            $$
+            Through random Fourier features, we can construct
+            $$
+            \boldsymbol{\phi}_{\text{EBM}}(s, a) = \frac{\exp(\|\boldsymbol{\varphi}(s, a)\|^2)}{Z(s, a)}\boldsymbol{\zeta}_N(\boldsymbol{\varphi}(s, a)),
+            $$
+            where $\boldsymbol{\zeta}_N(\boldsymbol{\varphi}(s, a))$ is the random Fourier feature of $\boldsymbol{\varphi}(s, a)$.
+          </p>
+          <p>
+            <span style="color: #047e1e;">✔ Most flexible in terms of expressiveness.</span>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <hr style="width: 50%; margin: 30px auto; border: none; border-top: 1px solid #ddd;">
+    <h2 class="title">🎯 Learning Algorithms for Spectral Representations</h2>
+    <p>
+      Direct maximum likelihood estimation is intractable ...
+      $$
+      \begin{aligned}
+          &\max_{\boldsymbol{\phi}, \boldsymbol{\mu}} \ \mathbb{E}_{(\mathbf{s}, \mathbf{a}, \mathbf{s}') \sim \mathcal{D}}\left[\log \langle\boldsymbol{\phi}(s, a), \boldsymbol{\mu}(s')\rangle\right]\\
+      \end{aligned}
+      $$
+      <span style="color: red;">
+      $$
+      \ \ \ \text{s.t.}\ \forall(s, a), \ \  \int_\mathcal{S} \langle\boldsymbol{\phi}(s, a), \boldsymbol{\mu}(s')\rangle\mathrm{d}s'=1,
+      $$
+      </span>
+    But fortunately tractable alternatives exist for different formulations. 
+    <ul style="list-style: none;">
+      <li><b>Ⅰ. Spectral Contrastive Learning:</b>
+        $$
+        \begin{aligned}
+          &\min_{\theta} \ \Big\|\frac{\mathbb{P}(s, a, s')}{\sqrt{\mathbb{P(s, a)\mathbb{P}(s')}}}-\sqrt{\mathbb{P}(s, a)\mathbb{P}(s')}\boldsymbol{\varphi}_\theta(s, a)^\top\boldsymbol{\nu}_\theta(s')\Big\|^2\\
+          &=\min_{\theta} \ \mathbb{E}_{\mathbb{P}(s, a)\mathbb{P}(s')}\left[(\boldsymbol{\varphi}_\theta(s, a)^\top\boldsymbol{\nu}_\theta(s'))^2\right]-2\mathbb{E}_{\mathbb{P}(s, a, s')}\left[\boldsymbol{\varphi}_\theta(s, a)^\top\boldsymbol{\nu}_\theta(s')\right]
+        \end{aligned}
+        $$
+      </li>
+      <li><b>Ⅱ. Variational Learning:</b>
+        $$
+        \begin{aligned}
+          &\max_{\theta} \ \log \int \varphi_\theta(z|s, a)\nu_\theta(s'|z)\mathrm{d}z\\
+          &\geq \mathbb{E}_{z\sim q_\theta(\cdot|s, a, s')}\left[\log \nu_\theta(s'|z)\right] - D_{\mathrm{KL}}(q_\theta\| \varphi_\theta)
+        \end{aligned}
+        $$
+      </li>
+      <li><b>Ⅲ. Score Matching:</b>
+        $$
+        \begin{aligned}
+          &\min_{\theta}\ \mathbb{E}_{(s, a, s'), \tilde{s}'\sim\mathbb{P}(\cdot|s'; \beta)}\left[\left\|\boldsymbol{\varphi}_\theta(s, a)^\top\nabla_{\tilde{s}'}\boldsymbol{\nu}_\theta(\tilde{s}';\beta)-\nabla_{\tilde{s}'}\log \mathbb{P}(\tilde{s}'|s'; \beta)\right\|^2\right],
+        \end{aligned}
+        $$
+      </li>
+      <li><b>Ⅳ. Noise Contrastive Estimation:</b>
+        $$
+        \begin{aligned}
+          &\max_{\theta}\ \frac 1{MN}\sum_{m=1}^M\sum_{n=1}^N\log\frac{\exp(\boldsymbol{\varphi}_\theta(s_n,a_n)^\top\boldsymbol{\nu}_\theta(\tilde{s}'_n;\beta_m))}{\sum_{k=1}^K\exp(\boldsymbol{\varphi}_\theta(s_n,a_n)^\top\boldsymbol{\nu}_\theta(\tilde{s}'_n;\beta_m))}
+        \end{aligned}
+        $$
+      </li>
+    </ul>
+    </p>
+
+    <hr style="width: 50%; margin: 30px auto; border: none; border-top: 1px solid #ddd;">
+    <h2 class="title">🧩 Integration with RL</h2>
+    <p>
+      Since our theory suggests that spectral representations can represent $Q$-value functions sufficiently, we build our $Q$-value functions as $Q_{\theta, \xi}(s, a)=Q_{\xi}(\boldsymbol{\phi}_\theta(s, a))$, where the actual form depends on the form of the spectral representations. In this way, spectral representations can be integrated with any RL pipeline seamlessly, and each of the learning methods in the previous section instantiates an effective RL algorithm.
+    </p>
+    <p>
+      <b>Extension to POMDPs:</b> Assuming the POMDPs satisfy the $L$-decodability, which implies that the $L$-step history $x_t=(o_{t-L+1}, a_{t-L+1}, \ldots, o_t)$ is a sufficient statistic for the current system state, we can identify the spectral representations of POMDPs by considering the $L$-step decomposition:
+      $$
+      \begin{aligned}
+          \mathbb{P}^\pi_L(x_{t+L}|x_t, a_t) &= \langle\boldsymbol{\varphi}(x_t, a_t), \boldsymbol{\nu}^{\tilde{\pi}}(x_{t+L})\rangle_{\mathcal{H}},\\
+          r^\pi_L(x_t, a_t)&=\sum_{i=0}^{L-1}\gamma^ir_{t+i}=\langle\boldsymbol{\varphi}(x_t, a_t), \boldsymbol{\theta}_r^{\tilde{\pi}}\rangle_{\mathcal{H}},\\
+      \end{aligned}
+      $$
+      The $L$-step Bellman equation then leads to $Q^\pi(x_t, a_t)=\langle\boldsymbol{\varphi}(x_t, a_t), \boldsymbol{\theta}_r^{\tilde{\pi}}+\gamma^L\boldsymbol{\nu}^{\tilde{\pi}}(x_{t+L})\rangle_{\mathcal{H}}$, making $\boldsymbol{\varphi}(x_t, a_t)$ the spectral representation that can sufficiently express the $Q$-value function. 
+    </p>
+
+    <hr style="width: 50%; margin: 30px auto; border: none; border-top: 1px solid #ddd;">
+    <h2 class="title">🧪 Empirical Evaluation</h2>
+    <p>
+      We consider the following instantiations of spectral representation-based RL algorithms:
+      <table border="1">
+        <tr>
+            <td><code>Speder</code></td>
+            <td>1. Linear Formulation + Ⅰ. Spectral Contrastive Learning</td>
+        </tr>
+        <tr>
+            <td><code>LV-Rep</code></td>
+            <td>2. Latent Variable Formulation + Ⅱ. Variational Learning</td>
+        </tr>
+        <tr>
+            <td><code>Diff-SR</code></td>
+            <td>3. Energy-Based Formulation + Ⅲ. Score Matching</td>
+        </tr>
+        <tr>
+            <td><code>CTRL-SR</code></td>
+            <td>3. Energy-Based Formulation + Ⅳ. Noise Contrastive Learning</td>
+        </tr>
+    </table>
+    </p>
+    All of them are implemented based on the <code>TD3</code> Algorithm. 
+
+    <hr style="width: 50%; margin: 30px auto; border: none; border-top: 1px solid #ddd;">
+    <h3 style="text-align: center; color: #27579a; margin-bottom: 0px" id="toy2d">DMControl with Proprioceptive Inputs
+    </h3>
+    <br>
+    <div style="display: flex; justify-content: center;">
+      <img src="static/images/proprioceptive.png" width="80%" height="auto" alt="MY ALT TEXT"/>
+    </div>
+    <ul>
+      <li><b>Representation learning matters. </b> <br>Representation-based methods consistently outperform the model-free counterpart, <code>TD3</code>. These improvements are particularly pronounced on the more complex <code>dog-*</code> tasks and <code>humanoid-*</code> tasks, where algorithms using spectral representations achieve significant gains.</li>
+      <li><b>The more expressive, the better. </b> <br>Among methods with spectral representations, <code>Speder</code> generally performed the poorest, followed by <code>LV-Rep</code>, and <code>Diff-SR</code> and <code>CTRL-SR</code> achieve the best results. This is likely due to the inherent limitation of linear spectral representations, as finite-dimensional representations may cause information loss. Instead, the energy-based approach is the most flexible one, since the representations are implicitly infinite-dimensional due to the Gaussian kernel transformation.</li>
+    </ul> 
+
+    <hr style="width: 50%; margin: 30px auto; border: none; border-top: 1px solid #ddd;">
+    <h3 style="text-align: center; color: #27579a; margin-bottom: 0px" id="toy2d">DMControl with Visual Inputs
+    </h3>
+    <br>
+    <div style="display: flex; justify-content: center;">
+      <img src="static/images/visual.png" width="80%" height="auto" alt="MY ALT TEXT"/>
+    </div>
+    <ul>
+      <li><b>Superior performance, but faster. </b> <br>spectral representation-based methods, despite also being model-free, achieve performance comparable to that of leading model-based algorithms. Notably, they even outperform these approaches on challenging tasks such as <code>dog-stand</code>. Meanwhile, both <code>Diff-SR</code> and <code>CTRL-SR</code> require significantly less training time than model-based competitors, since the representation-based method avoids the costly model-based planning procedure.</li>
+    </ul>
+
+    <hr style="width: 50%; margin: 30px auto; border: none; border-top: 1px solid #ddd;">
+    <h2 class="title">🏁 Closing Remarks</h2>
+    <div class="block full-width" style="margin-top: 0;">
+      <div style="display: flex; align-items: center; gap: 20px;">
+        <div style="flex: 1; margin: 0;">
+          <p style="margin: 0;">
+            <ul class="key-findings">
+              <li>In this survey, we review <b>spectral representations</b> for efficient reinforcement learning, comparing methods in the online RL setting under a fair experimental protocol.
+              </li>
+              <li>
+                Spectral representations <b>generalize beyond online RL</b>—they can leverage offline/passive data, are highly transferable, and extend to off-policy evaluation, multi-agent RL, and goal-conditional RL.
+              </li>
+              <li>
+                Outside RL, these ideas inform <b>modular design in generative models</b> (LLMs, diffusion models), where pre-trained representations improve downstream fine-tuning and post-training tasks.
+              </li>
+            </ul>
+          </p>
+        </div>
+      </div>
+    </div>
+
+ 
+    
+    
+  </div>
+  <style>
+    .building-blocks-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 20px;
+      margin: 20px 0;
+      perspective: 1000px;
+    }
+
+    .block {
+      background-color: #f5f5f5;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 20px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      transform-style: preserve-3d;
+    }
+
+    .block h3 {
+      color: #27579a;
+      margin-top: 0;
+    }
+
+    .block p {
+      margin-bottom: 0;
+    }
+
+    .full-width {
+      grid-column: 1 / -1;
+      margin-top: 20px;
+    }
+
+    /* Add hover effects */
+    .block:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    h3#qualitative-evaluation {
+      scroll-margin-top: 20px;
+      text-align: center;
+      color: #27579a;
+    }
+  </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const blocks = document.querySelectorAll('.block');
+
+      blocks.forEach(block => {
+        block.addEventListener('mousemove', (e) => {
+          const rect = block.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+
+          const centerX = rect.width / 2;
+          const centerY = rect.height / 2;
+
+          // Special case for full-width block - reduce rotation by half
+          const divisor = block.classList.contains('full-width') ? 1500 : 320;
+          const rotateX = -(y - centerY) / divisor;
+          const rotateY = (x - centerX) / divisor;
+
+          block.style.transform = `
+                            perspective(1000px)
+                            rotateX(${rotateX}deg)
+                            rotateY(${rotateY}deg)
+                            scale3d(1.005, 1.005, 1.005)
+                        `;
+
+          block.style.boxShadow = `
+                            ${-rotateY / 16}px ${rotateX / 16}px 20px rgba(39, 87, 207, 0.15),
+                            ${-rotateY / 32}px ${rotateX / 32}px 10px rgba(39, 87, 207, 0.11)
+                        `;
+        });
+
+        block.addEventListener('mouseleave', () => {
+          block.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale3d(1, 1, 1)';
+          block.style.boxShadow = 'none';
+        });
+      });
+    });
+  </script>
+</section>
+
+
+<!--BibTex citation -->
+<section class="section" id="BibTeX">
+  <div class="container is-max-desktop content">
+      <h2 class="title">BibTeX</h2>
+      <pre><code>TBD</code></pre>
+  </div>
+</section>
+<!--End BibTex citation -->
+
+
+
+</body>
+</html>
