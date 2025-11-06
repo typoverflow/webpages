@@ -119,10 +119,13 @@
                   </div>
 
               <div class="is-size-5 publication-authors">
-                <span class="author-block">Georgia Institute of Technology</span>&nbsp;&nbsp;&nbsp;
-                <span class="author-block">Harvard University</span>&nbsp;&nbsp;&nbsp;
-                <span class="author-block">University of Alberta</span>&nbsp;&nbsp;&nbsp;
-                <span class="author-block">DeepMind</span>
+                <span class="author-block">Georgia Institute of Technology</span>
+                &nbsp;&nbsp;&nbsp;
+                <span class="author-block">Harvard University</span>
+                &nbsp;&nbsp;&nbsp;
+                <span class="author-block">University of Alberta</span>
+                <!-- &nbsp;&nbsp;&nbsp; -->
+                <!-- <span class="author-block">DeepMind</span> -->
               </div>
 
                   <div class="column has-text-centered">
@@ -266,7 +269,7 @@
     \end{aligned}
     $$
 
-    In fact, such decomposition always exists. The factorization instantly implies the linearity of $Q$-value functions:
+    In fact, such decomposition <b>always exists</b>. The factorization instantly leads to the linearity of $Q$-value functions:
     $$
     \begin{aligned}
     Q^\pi(s, a) &= r(s, a)+\gamma \int_{\mathcal{S}} \mathbb{P}(s'|s, a)V(s')\mathrm{d}s'\\
@@ -276,10 +279,10 @@
     $$
     <em>i.e.</em>, $Q$-value functions lie in the linear function space spanned by the same feature map $\boldsymbol{\phi}(s, a)$. This implies that:
     <p style="color: #27579a; text-indent: 2em;">
-      <b>✔ Theoretically</b>, we can reduce the complexity by only considering linear $Q$-value functions;
+      <b>✔ Theoretically</b>, we can reduce the <b>complexity</b> by only considering linear $Q$-value functions;
     </p>
     <p style="color: #c68306; text-indent: 2em;">
-      <b>✔ Practically</b>, $\boldsymbol{\phi}(s, a)$ can serve as a effective representation for $Q$-value functions;
+      <b>✔ Practically</b>, $\boldsymbol{\phi}(s, a)$ can serve as a <b>effective</b> representation for $Q$-value functions;
     </p>
     <p style="color: #047e1e; text-indent: 2em;">
       <b>✔ Intuitively</b>, $\boldsymbol{\phi}(s, a)$ encodes the <b>essential</b> information of the system dynamics.
@@ -289,7 +292,7 @@
     <h3 style="text-align: center; color: #27579a; margin-bottom: 0px" id="toy2d">Formulations
     </h3>
     <br>
-    We can instantiate the factorization for different actual formulations of the transition operators. 
+    We can instantiate the factorization by considering different formulations of the transition operators. 
     <br>
     <br>
 
@@ -417,10 +420,10 @@
     <hr style="width: 50%; margin: 30px auto; border: none; border-top: 1px solid #ddd;">
     <h2 class="title">🧩 Integration with RL</h2>
     <p>
-      Since our theory suggests that spectral representations can represent $Q$-value functions sufficiently, we build our $Q$-value functions as $Q_{\theta, \xi}(s, a)=Q_{\xi}(\boldsymbol{\phi}_\theta(s, a))$, where the actual form depends on the form of the spectral representations. In this way, spectral representations can be integrated with any RL pipeline seamlessly, and each of the learning methods in the previous section instantiates an effective RL algorithm.
+      Since our theory suggests that spectral representations can represent $Q$-value functions sufficiently, we build our $Q$-value functions as $Q_{\theta, \xi}(s, a)=Q_{\xi}(\boldsymbol{\phi}_\theta(s, a))$, where the specific form depends on the choice of spectral representations. This allows spectral representations to be seamlessly integrated into any reinforcement learning (RL) pipeline. Meanwhile, each of the learning methods described in the previous section naturally realizes an effective RL algorithm.
     </p>
     <p>
-      <b>Extension to POMDPs:</b> Assuming the POMDPs satisfy the $L$-decodability, which implies that the $L$-step history $x_t=(o_{t-L+1}, a_{t-L+1}, \ldots, o_t)$ is a sufficient statistic for the current system state, we can identify the spectral representations of POMDPs by considering the $L$-step decomposition:
+      <b>Extension to POMDPs:</b> Assuming the POMDPs satisfy the $L$-decodability condition, which implies that the $L$-step history $x_t=(o_{t-L+1}, a_{t-L+1}, \ldots, o_t)$ is a sufficient statistic for the current system state, we can derive spectral representations for POMDPs using the $L$-step decomposition:
       $$
       \begin{aligned}
           \mathbb{P}^\pi_L(x_{t+L}|x_t, a_t) &= \langle\boldsymbol{\varphi}(x_t, a_t), \boldsymbol{\nu}^{\tilde{\pi}}(x_{t+L})\rangle_{\mathcal{H}},\\
@@ -475,7 +478,7 @@
       <img src="static/images/visual.png" width="80%" height="auto" alt="MY ALT TEXT"/>
     </div>
     <ul>
-      <li><b>Superior performance, but faster. </b> <br>spectral representation-based methods, despite also being model-free, achieve performance comparable to that of leading model-based algorithms. Notably, they even outperform these approaches on challenging tasks such as <code>dog-stand</code>. Meanwhile, both <code>Diff-SR</code> and <code>CTRL-SR</code> require significantly less training time than model-based competitors, since the representation-based method avoids the costly model-based planning procedure.</li>
+      <li><b>Superior performance, but faster. </b> <br>spectral representation-based methods, despite also being model-free, achieve performance comparable to that of leading model-based algorithms. Notably, they even outperform these approaches on challenging tasks such as <code>dog-stand</code>. Meanwhile, both <code>Diff-SR</code> and <code>CTRL-SR</code> require significantly less training time than model-based competitors, since the representation-based methods avoid the costly model-based planning procedure.</li>
     </ul>
 
     <hr style="width: 50%; margin: 30px auto; border: none; border-top: 1px solid #ddd;">
