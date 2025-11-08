@@ -101,9 +101,14 @@
         <div class="columns is-centered">
           <div class="column has-text-centered">
             <figure style="text-align: center; margin-bottom: 1rem;">
-              <img src="static/images/icon-wide-low.png" alt="Logo" style="width: 300px; height: auto;">
+              <img 
+                src="static/images/icon-wide-low.png" 
+                alt="Logo" 
+                style="width: 300px; height: auto; border: 0px solid #27579a; border-radius: 12px; box-shadow: 0 10px 24px rgba(39, 87, 154, 0.22), 0 2px 4px rgba(0,0,0,0.09);"
+              >
             </figure>
-          <h1 class="title is-1 publication-title" style="font-size: 2.2em; font-weight: normal;"> <strong style="font-weight: bold; font-style: monospace;">Spectral-RL</strong>: <span style="font-weight: normal;">Spectral Representations for Reinforcement Learning</span> </h1>
+          <br>
+          <h1 class="title is-1 publication-title" style="font-size: 2.2em; font-weight: normal;"> <strong style="font-weight: bold; font-style: monospace;">Spectral-RL</strong>: <span style="font-weight: normal;">Spectral Representations for <br>Reinforcement Learning</span> </h1>
             <div class="is-size-5 publication-authors">
               <!-- Paper authors -->
               <span class="author-block">
@@ -211,7 +216,7 @@
 <!-- End teaser video -->
 
 <!-- Paper abstract -->
-<section class="section hero is-light">
+<!-- <section class="section hero is-light">
   <div class="container is-max-desktop">
     <div class="columns is-centered has-text-centered">
       <div class="column is-four-fifths">
@@ -230,7 +235,7 @@
       </div>
     </div>
   </div>
-</section>
+</section> -->
 <!-- End paper abstract -->
 
 
@@ -244,14 +249,14 @@
       <em>Can we develop reinforcement learning algorithms that are both provably efficient and practically effective?</em>
     </div>
     <p>
-      In this survey, we provide an affirmative answer to this question by introducing the framework of spectral representations. We systematically examine spectral representations from the following perspectives:
+      In this survey, we provide an answer to this question through the lens of spectral representations. 
     </p>
-    <ul>
-      <li><b>Properties and Formulations:</b> We first review the core properties of spectral representations. We then describe methods for constructing them in both linear and non-linear dynamic systems, demonstrating the broad applicability of the framework.</li>
+    <!-- <ul>
+      <li><b>Properties and Formulations;</b> We first review the core properties of spectral representations. We then describe methods for constructing them in both linear and non-linear dynamic systems, demonstrating the broad applicability of the framework.</li>
       <li><b>Learning Algorithms:</b> We review algorithms designed to learn spectral representations directly from data, focusing on model-free approaches that circumvent the need for intermediate dynamics modeling.</li>
       <li><b>Integration with RL:</b> We examine how spectral representations can be combined with model-free RL algorithms to achieve provably efficient and practically effective performance.</li>
       <li><b>Empirical Evaluation:</b> We summarize this survey with large-scale evaluations, comparing the performance of spectral representation-based RL algorithms against standard model-free and model-based baselines.</li>
-    </ul>
+    </ul> -->
   <!-- </div>
 </section>
 
@@ -463,12 +468,33 @@
     </h3>
     <br>
     <div style="display: flex; justify-content: center;">
-      <img src="static/images/proprioceptive.png" width="80%" height="auto" alt="MY ALT TEXT"/>
+      <img src="static/images/proprioceptive.png" width="90%" height="auto" alt="MY ALT TEXT"/>
     </div>
-    <ul>
-      <li><b>Representation learning matters. </b> <br>Representation-based methods consistently outperform the model-free counterpart, <code>TD3</code>. These improvements are particularly pronounced on the more complex <code>dog-*</code> tasks and <code>humanoid-*</code> tasks, where algorithms using spectral representations achieve significant gains.</li>
-      <li><b>The more expressive, the better. </b> <br>Among methods with spectral representations, <code>Speder</code> generally performed the poorest, followed by <code>LV-Rep</code>, and <code>Diff-SR</code> and <code>CTRL-SR</code> achieve the best results. This is likely due to the inherent limitation of linear spectral representations, as finite-dimensional representations may cause information loss. Instead, the energy-based approach is the most flexible one, since the representations are implicitly infinite-dimensional due to the Gaussian kernel transformation.</li>
-    </ul> 
+    <br>
+    <div 
+      style="
+        display: flex; 
+        justify-content: center; 
+        align-items: stretch; 
+        margin-top: 8px;
+        padding-left: 5vw; 
+        padding-right: 5vw;
+        box-sizing: border-box;
+        width: 100%;"
+    >
+      <div style="flex: 1; padding: 0 24px 0 0; border-right: 1.5px solid #eee; display: flex; flex-direction: column; align-items: center; text-align: center;">
+        <div style="font-size: 1.0em; font-weight: bold; color: #555555; margin-bottom: 6px;">Representation learning matters.</div>
+        <div style="color: #888; font-size: 0.85em; margin-bottom: 18px;">
+          Representation-based methods consistently outperform the model-free counterpart, especially on complex tasks like <code>dog-*</code> and <code>humanoid-*</code> tasks. 
+        </div>
+      </div>
+      <div style="flex: 1; padding: 0 0 0 24px; display: flex; flex-direction: column; align-items: center; text-align: center;">
+        <div style="font-size: 1.0em; font-weight: bold; color: #555555; margin-bottom: 6px;">The more expressive, the better.</div>
+        <div style="color: #888; font-size: 0.85em;">
+          Among methods with spectral representations, the energy-based approaches is the most flexible one, probably because the representations are implicitly infinite-dimensional due to the Gaussian kernel transformation.
+        </div>
+      </div>
+    </div>
 
     <hr style="width: 50%; margin: 30px auto; border: none; border-top: 1px solid #ddd;">
     <h3 style="text-align: center; color: #27579a; margin-bottom: 0px" id="toy2d">DMControl with Visual Inputs
@@ -477,9 +503,25 @@
     <div style="display: flex; justify-content: center;">
       <img src="static/images/visual.png" width="80%" height="auto" alt="MY ALT TEXT"/>
     </div>
-    <ul>
-      <li><b>Superior performance, but faster. </b> <br>spectral representation-based methods, despite also being model-free, achieve performance comparable to that of leading model-based algorithms. Notably, they even outperform these approaches on challenging tasks such as <code>dog-stand</code>. Meanwhile, both <code>Diff-SR</code> and <code>CTRL-SR</code> require significantly less training time than model-based competitors, since the representation-based methods avoid the costly model-based planning procedure.</li>
-    </ul>
+    <br>
+    <div 
+      style="
+        display: flex; 
+        justify-content: center; 
+        align-items: stretch; 
+        margin-top: 8px;
+        padding-left: 8vw; 
+        padding-right: 8vw;
+        box-sizing: border-box;
+        width: 100%;"
+    >
+      <div style="flex: 1; padding: 0 24px 0 24px; display: flex; flex-direction: column; align-items: center; text-align: center;">
+        <div style="font-size: 1.0em; font-weight: bold; color: #555555; margin-bottom: 6px;">Superior performance, but faster.</div>
+        <div style="color: #888; font-size: 0.85em;">
+          spectral representation-based methods, despite also being model-free, achieve performance comparable to that of leading model-based algorithms. Meanwhile, both <code>Diff-SR</code> and <code>CTRL-SR</code> require significantly less training time than model-based competitors, since the representation-based methods avoid the costly model-based planning procedure.
+        </div>
+      </div>
+    </div>
 
     <hr style="width: 50%; margin: 30px auto; border: none; border-top: 1px solid #ddd;">
     <h2 class="title">🏁 Closing Remarks</h2>
@@ -598,7 +640,38 @@
 <section class="section" id="BibTeX">
   <div class="container is-max-desktop content">
       <h2 class="title">BibTeX</h2>
-      <pre><code>TBD</code></pre>
+<pre><code>@inproceedings{ren2023latent,
+  title={Latent Variable Representation for Reinforcement Learning},
+  author={Ren, Tongzheng and Xiao, Chenjun and Zhang, Tianjun and Li, Na and Wang, Zhaoran and Schuurmans, Dale and Dai, Bo},
+  booktitle={International Conference on Learning Representations (ICLR)},
+  year={2023}
+}
+@inproceedings{zhang2022making,
+  title={Making linear mdps practical via contrastive representation learning},
+  author={Zhang, Tianjun and Ren, Tongzheng and Yang, Mengjiao and Gonzalez, Joseph and Schuurmans, Dale and Dai, Bo},
+  booktitle={International Conference on Machine Learning (ICML)},
+  pages={26447--26466},
+  year={2022},
+}
+@inproceedings{zhang2024provable,
+  title={Provable Representation with Efficient Planning for Partially Observable Reinforcement Learning},
+  author={Zhang, Hongming and Ren, Tongzheng and Xiao, Chenjun and Schuurmans, Dale and Dai, Bo},
+  booktitle={International Conference on Machine Learning (ICML)},
+  pages={59759--59782},
+  year={2024},
+}
+@inproceedings{ren2023spectral,
+  title={Spectral Decomposition Representation for Reinforcement Learning},
+  author={Ren, Tongzheng and Zhang, Tianjun and Lee, Lisa and Gonzalez, Joseph E and Schuurmans, Dale and Dai, Bo},
+  booktitle={International Conference on Learning Representations (ICLR)},
+  year={2023}
+}
+@article{shribak2024diffusion,
+  title={Diffusion Spectral Representation for Reinforcement Learning},
+  author={Shribak, Dmitry and Gao, Chen-Xiao and Li, Yitong and Xiao, Chenjun and Dai, Bo},
+  journal={Annual Conference on Neural Information Processing Systems (NeurIPS)},
+  year={2024}
+}</code></pre>
   </div>
 </section>
 <!--End BibTex citation -->
